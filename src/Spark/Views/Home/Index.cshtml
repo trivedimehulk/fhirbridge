@@ -1,0 +1,62 @@
+﻿<center>
+    <h1>FHIR BRIDGE <Br />(Supports: Epic, AllScripts, Aegis, HAPI & Opensource FHIR Servers)</h1><br />
+    <i>
+        FHIR R4 - SUPPORTED FHIR BRIDGE - Call any FHIR instance (useful for mulitple CDOs and multiple entities)
+    </i>
+    <br /><img src="~/Content/diagram.png"  />
+</center>
+
+
+<br /><br />Request Params:
+<li>fhir_host - supply your fhir endpoint (for e.g. http://wildfhir4.aegis.net/fhir4-0-0/)</li>
+<li>Content_Type - supply in which format you need your response (for e.g. text/xml - default is xml)</li>
+<li>Query Parameter / URL - Dynamic (e.g. /patient/1 OR AllergyIntolerance?patient=Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB)</li>
+
+<br />Expect Response:
+<br />FHIR supported xml/json
+<br /><br /><b>Patient Examples (Aegis & Epic)</b>
+<br /><br />Example 1: <br />Aegis Healthcare - AEGIS WildFHIR FHIR4-0-0
+<Br />Method: Get
+<Br />URL: <b>@Request.Url.Scheme://@Request.Url.Host:@Request.Url.Port/fhir</b>/Patient/d6fd440bbc914bc2a42742d0ffaf55e0
+<Br />fhir_host = <b>http://wildfhir4.aegis.net/fhir4-0-0/</b>
+<Br />Content_Type = "text/xml"
+<br />Resource type requested: Patient
+<br />Resource identifier for EHR: d6fd440bbc914bc2a42742d0ffaf55e0
+
+<br /><br />Example 2: <br />Epic Systems
+<Br />Method: Get
+<Br />URL: <b>@Request.Url.Scheme://@Request.Url.Host:@Request.Url.Port/fhir</b>/Patient/Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB
+<Br />fhir_host = <b>https://open-ic.epic.com/FHIR/api/FHIR/DSTU2/</b>
+<Br />Content_Type = "text/xml"
+<br />Resource type requested: Patient
+<br />Resource identifier for EHR: Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB
+
+<br /><br /><b>Allergy Intolerance Examples (Aegis & Epic)</b>
+<br /><br />Example 1: <br />Epic Systems
+<Br />Method: Get
+<Br />URL: <b>@Request.Url.Scheme://@Request.Url.Host:@Request.Url.Port/fhir</b>/AllergyIntolerance?patient=Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB
+<Br />fhir_host = <b>https://open-ic.epic.com/FHIR/api/FHIR/DSTU2/</b>
+<Br />Content_Type = "text/xml"
+<br />Resource type requested: AllergyIntolerance
+<br />Resource identifier for EHR: Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB <b>(Searched by patient)</b>
+
+<br /><br />Example 2: <br />Aegis Healthcare - AEGIS WildFHIR FHIR4-0-0
+<Br />Method: Get
+<Br />URL: <b>@Request.Url.Scheme://@Request.Url.Host:@Request.Url.Port/fhir</b>/AllergyIntolerance?id=fishallergy
+<Br />fhir_host = <b>http://wildfhir4.aegis.net/fhir4-0-0/</b>
+<Br />Content_Type = "text/xml"
+<br />Resource type requested: AllergyIntolerance
+<br />Resource identifier for EHR: fishallergy <b>(Searched by resource id)</b>
+
+<br /><br />
+List of supported resources & Actions:
+<li>Patient (read)</li>
+<li>Allergy Intolerance (search)</li>
+
+<br /><br />
+Supported protos:
+<br />http, https
+
+@*<br /><br />
+<Br />TO-DO(s):
+<Br />Authentication*@

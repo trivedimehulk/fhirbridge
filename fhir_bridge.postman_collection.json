@@ -1,0 +1,163 @@
+{
+	"variables": [],
+	"info": {
+		"name": "fhir_bridge",
+		"_postman_id": "87225f08-6b85-532b-f680-7dc21e1bbff5",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "azure",
+			"description": "",
+			"item": [
+				{
+					"name": "Patient_Get",
+					"description": "",
+					"item": [
+						{
+							"name": "Aegis_Patient_Get_Sample",
+							"request": {
+								"url": "http://fhirbridge.azurewebsites.net:80/fhir/Patient/d6fd440bbc914bc2a42742d0ffaf55e0",
+								"method": "GET",
+								"header": [
+									{
+										"key": "fhir_host",
+										"value": "http://wildfhir4.aegis.net/fhir4-0-0/",
+										"description": ""
+									},
+									{
+										"key": "Content_Type",
+										"value": "text/xml",
+										"description": ""
+									}
+								],
+								"body": {},
+								"description": ""
+							},
+							"response": []
+						},
+						{
+							"name": "Epic_Patient_Get_Sample",
+							"request": {
+								"url": "http://fhirbridge.azurewebsites.net:80/fhir/Patient/Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB",
+								"method": "GET",
+								"header": [
+									{
+										"key": "fhir_host",
+										"value": "https://open-ic.epic.com/FHIR/api/FHIR/DSTU2/",
+										"description": ""
+									},
+									{
+										"key": "Content_Type",
+										"value": "text/xml",
+										"description": ""
+									}
+								],
+								"body": {},
+								"description": ""
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Allergy Intolerance_FetchForAPatient",
+					"description": "",
+					"item": [
+						{
+							"name": "Epic_Allergy Intolerance_FetchForAPatient_Sample",
+							"request": {
+								"url": {
+									"raw": "http://fhirbridge.azurewebsites.net:80/fhir/AllergyIntolerance?patient=Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB",
+									"protocol": "http",
+									"host": [
+										"fhirbridge",
+										"azurewebsites",
+										"net"
+									],
+									"port": "80",
+									"path": [
+										"fhir",
+										"AllergyIntolerance"
+									],
+									"query": [
+										{
+											"key": "patient",
+											"value": "Tbt3KuCY0B5PSrJvCu2j-PlK.aiHsu2xUjUM8bWpetXoB",
+											"equals": true,
+											"description": ""
+										}
+									],
+									"variable": []
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "fhir_host",
+										"value": "https://open-ic.epic.com/FHIR/api/FHIR/DSTU2/",
+										"description": ""
+									},
+									{
+										"key": "Content_Type",
+										"value": "text/xml",
+										"description": ""
+									}
+								],
+								"body": {},
+								"description": ""
+							},
+							"response": []
+						},
+						{
+							"name": "Aegis_Allergy Intolerance_FetchForAPatient_Sample",
+							"request": {
+								"url": {
+									"raw": "http://fhirbridge.azurewebsites.net:80/fhir/AllergyIntolerance?id=fishallergy",
+									"protocol": "http",
+									"host": [
+										"fhirbridge",
+										"azurewebsites",
+										"net"
+									],
+									"port": "80",
+									"path": [
+										"fhir",
+										"AllergyIntolerance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "fishallergy",
+											"equals": true,
+											"description": ""
+										}
+									],
+									"variable": []
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "fhir_host",
+										"value": "http://wildfhir4.aegis.net/fhir4-0-0/",
+										"description": ""
+									},
+									{
+										"key": "Content_Type",
+										"value": "text/xml",
+										"description": ""
+									}
+								],
+								"body": {},
+								"description": ""
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		}
+	]
+}
