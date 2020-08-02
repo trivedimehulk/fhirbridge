@@ -322,6 +322,7 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="PostManProfiles\fhir_bridge.postman_collection.json" />
     <None Include="Properties\PublishProfiles\fhirbridge - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fhirbridge - ReadOnly - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fhirbridge - Web Deploy.pubxml" />
