@@ -1,3 +1,8 @@
+FHIR Bridge
+============
+
+FHIR Bridge is a open source implementation from Spark FHIR C# Server. The bridge serves to communicate to multiple FHIR entities from single host. A beneficial implementation for larger healthcare groups where mulitple FHIR instances for CDOs exists.
+
 Spark
 =====
 
