@@ -40,396 +40,307 @@ namespace Spark.Controllers
         [InjectionConstructor]
         public FhirController()
         {
-            // This will be a (injected) constructor parameter in ASP.vNext.
-            //_fhirService = fhirService;
+            //todo
         }
 
         [HttpGet, Route("{type}/{id}")]
         public async System.Threading.Tasks.Task<HttpResponseMessage> Read(string type, string id)
         {
-            ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
-            Key key = Key.Create(type, id);
-            var headers = Request.Headers;
-            string fhir_host = String.Empty;
+            //mt - defaulting it to xml
             string ContentType = "application/xml";
             var responseString = string.Empty;
+            HttpStatusCode _respCode = HttpStatusCode.OK;
 
-            //fetch the fhir host from header - this will decide where to route the call
-            if (headers.Contains("fhir_host") && headers.GetValues("fhir_host").First().Length > 0)
+            try
             {
-                fhir_host = headers.GetValues("fhir_host").First();
-                // clean up / from end
-                if (fhir_host.EndsWith("/") == true)
+                ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
+                Key key = Key.Create(type, id);
+                var headers = Request.Headers;
+                string fhir_host = String.Empty;
+                
+                
+
+                //fetch the fhir host from header - this will decide where to route the call
+                if (headers.Contains("fhir_host") && headers.GetValues("fhir_host").First().Length > 0)
                 {
-                    fhir_host = fhir_host.Substring(0, fhir_host.Length - 1);
+                    fhir_host = headers.GetValues("fhir_host").First();
+                    // clean up / from end
+                    if (fhir_host.EndsWith("/") == true)
+                    {
+                        fhir_host = fhir_host.Substring(0, fhir_host.Length - 1);
+                    }
+
+                    //fetch the accept header type from request - in which format client expects response
+                    if (headers.Contains("Content_Type"))//default is xml
+                    {
+                        ContentType = headers.GetValues("Content_Type").First();
+                    }
+
+
+                    HttpClient client = new HttpClient();
+
+                    client.DefaultRequestHeaders
+                    .Accept
+                    .Add(new MediaTypeWithQualityHeaderValue(ContentType));//ACCEPT header
+
+
+                    //if fhir host is https, then enable ssl
+                    if (fhir_host.Contains("https") == true)
+                    {
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+                    }
+
+                    try
+                    {
+                        responseString = await client.GetStringAsync(fhir_host + "/" + type + "/" + id);
+                    }
+                    catch (Exception ex)
+                    {
+                        //wrap and send the exception to client
+                        _respCode = HttpStatusCode.InternalServerError;
+                        ContentType = "text/plain";
+                        responseString = "Error while calling FHIR endpoint -> Original error " + ex.Message + "|Detailed Stack" + ex.StackTrace;
+                    }
                 }
-
-                //fetch the accept header type from request - in which format client expects response
-                if (headers.Contains("Content_Type"))//default is xml
+                else
                 {
-                    ContentType = headers.GetValues("Content_Type").First();
-                }
-
-
-                HttpClient client = new HttpClient();
-
-                client.DefaultRequestHeaders
-                .Accept
-                .Add(new MediaTypeWithQualityHeaderValue(ContentType));//ACCEPT header
-
-
-                //if fhir host is https, then enable ssl
-                if (fhir_host.Contains("https") == true)
-                {
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                }
-
-                try
-                {
-                    responseString = await client.GetStringAsync(fhir_host + "/" + type + "/" + id);
-                }
-                catch (Exception ex)
-                {
-                    //wrap and send the exception to client
+                    _respCode = HttpStatusCode.NotAcceptable;
+                    //the host is blank - fail the request
                     ContentType = "text/plain";
-                    responseString = "Error while calling FHIR endpoint -> Original error " + ex.Message + "|Detailed Stack" + ex.StackTrace;
+                    responseString = "No FHIR host url specified. Please supply a FHIR host";
                 }
+               
             }
-            else
+            catch (Exception ex)
             {
-                //the host is blank - fail the request
+                //wrap and send the exception to client
+                _respCode = HttpStatusCode.InternalServerError;
                 ContentType = "text/plain";
-                responseString = "No FHIR host url specified. Please supply a FHIR host";
+                responseString = "System error -> " + ex.Message + "|Detailed Stack" + ex.StackTrace;
             }
             return new HttpResponseMessage()
             {
                 Content = new StringContent(responseString, Encoding.UTF8, ContentType)
+                , StatusCode = _respCode
             };
-
 
         }
 
-        //[HttpGet, Route("{type}/{id}/_history/{vid}")]
-        //public FhirResponse VRead(string type, string id, string vid)
-        //{
-        //    Key key = Key.Create(type, id, vid);
-        //    return _fhirService.VersionRead(key);
-        //}
+        [HttpGet, Route("{type}/{id}/_history/{vid}")]
+        public FhirResponse VRead(string type, string id, string vid)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpPut, Route("{type}/{id?}")]
-        //public FhirResponse Update(string type, Resource resource, string id = null)
-        //{
-        //    string versionid = Request.IfMatchVersionId();
-        //    Key key = Key.Create(type, id, versionid);
-        //    if (key.HasResourceId())
-        //    {
-        //        Request.TransferResourceIdIfRawBinary(resource, id);
+        [HttpPut, Route("{type}/{id?}")]
+        public FhirResponse Update(string type, Resource resource, string id = null)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //        return _fhirService.Update(key, resource);
-        //    }
-        //    else
-        //    {
-        //        return _fhirService.ConditionalUpdate(key, resource,
-        //            SearchParams.FromUriParamList(Request.TupledParameters()));
-        //    }
-        //}
+        [HttpPost, Route("{type}")]
+        public FhirResponse Create(string type, Resource resource)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpPost, Route("{type}")]
-        //public FhirResponse Create(string type, Resource resource)
-        //{
-        //    Key key = Key.Create(type, resource?.Id);
+        [HttpDelete, Route("{type}/{id}")]
+        public FhirResponse Delete(string type, string id)
 
-        //    if (Request.Headers.Exists(FhirHttpHeaders.IfNoneExist))
-        //    {
-        //        NameValueCollection searchQueryString =
-        //            HttpUtility.ParseQueryString(
-        //                Request.Headers.First(h => h.Key == FhirHttpHeaders.IfNoneExist).Value.Single());
-        //        IEnumerable<Tuple<string, string>> searchValues =
-        //            searchQueryString.Keys.Cast<string>()
-        //                .Select(k => new Tuple<string, string>(k, searchQueryString[k]));
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
+        [HttpDelete, Route("{type}")]
+        public FhirResponse ConditionalDelete(string type)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //        return _fhirService.ConditionalCreate(key, resource, SearchParams.FromUriParamList(searchValues));
-        //    }
+        [HttpGet, Route("{type}/{id}/_history")]
+        public FhirResponse History(string type, string id)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //    //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+        // ============= Validate
+        [HttpPost, Route("{type}/{id}/$validate")]
+        public FhirResponse Validate(string type, string id, Resource resource)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //    return _fhirService.Create(key, resource);
-        //}
-
-        //[HttpDelete, Route("{type}/{id}")]
-        //public FhirResponse Delete(string type, string id)
-
-        //{
-        //    Key key = Key.Create(type, id);
-        //    FhirResponse response = _fhirService.Delete(key);
-        //    return response;
-        //}
-
-        //[HttpDelete, Route("{type}")]
-        //public FhirResponse ConditionalDelete(string type)
-        //{
-        //    Key key = Key.Create(type);
-        //    return _fhirService.ConditionalDelete(key, Request.TupledParameters());
-        //}
-
-        //[HttpGet, Route("{type}/{id}/_history")]
-        //public FhirResponse History(string type, string id)
-        //{
-        //    Key key = Key.Create(type, id);
-        //    var parameters = new HistoryParameters(Request);
-        //    return _fhirService.History(key, parameters);
-        //}
-
-        //// ============= Validate
-        //[HttpPost, Route("{type}/{id}/$validate")]
-        //public FhirResponse Validate(string type, string id, Resource resource)
-        //{
-        //    //entry.Tags = Request.GetFhirTags();
-        //    Key key = Key.Create(type, id);
-        //    return _fhirService.ValidateOperation(key, resource);
-        //}
-
-        //[HttpPost, Route("{type}/$validate")]
-        //public FhirResponse Validate(string type, Resource resource)
-        //{
-        //    // DSTU2: tags
-        //    //entry.Tags = Request.GetFhirTags();
-        //    Key key = Key.Create(type);
-        //    return _fhirService.ValidateOperation(key, resource);
-        //}
+        [HttpPost, Route("{type}/$validate")]
+        public FhirResponse Validate(string type, Resource resource)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
         //// ============= Type Level Interactions
 
         [HttpGet, Route("{type}")]
         public async System.Threading.Tasks.Task<HttpResponseMessage> Search(string type)
         {
-            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
-            var searchparams = Request.GetSearchParams();
-            string _searchParams = Request.RequestUri.Query;
-
-
-
-
-            var headers = Request.Headers;
-            string fhir_host = String.Empty;
             string ContentType = "application/xml";
             var responseString = string.Empty;
+            HttpStatusCode _respCode = HttpStatusCode.OK;
 
-            //fetch the fhir host from header - this will decide where to route the call
-            if (headers.Contains("fhir_host") && headers.GetValues("fhir_host").First().Length > 0)
+            try
             {
-                fhir_host = headers.GetValues("fhir_host").First();
+                int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
+                var searchparams = Request.GetSearchParams();
+                string _searchParams = Request.RequestUri.Query;
+                var headers = Request.Headers;
+                string fhir_host = String.Empty;
+                
 
-
-                // clean up / from end
-                if (fhir_host.EndsWith("/") == true)
+                //fetch the fhir host from header - this will decide where to route the call
+                if (headers.Contains("fhir_host") && headers.GetValues("fhir_host").First().Length > 0)
                 {
-                    fhir_host = fhir_host.Substring(0, fhir_host.Length - 1);
+                    fhir_host = headers.GetValues("fhir_host").First();
+
+
+                    // clean up / from end
+                    if (fhir_host.EndsWith("/") == true)
+                    {
+                        fhir_host = fhir_host.Substring(0, fhir_host.Length - 1);
+                    }
+
+                    //fetch the accept header type from request - in which format client expects response
+                    if (headers.Contains("Content_Type"))//default is xml
+                    {
+                        ContentType = headers.GetValues("Content_Type").First();
+                    }
+
+
+                    HttpClient client = new HttpClient();
+
+                    client.DefaultRequestHeaders
+                    .Accept
+                    .Add(new MediaTypeWithQualityHeaderValue(ContentType));//ACCEPT header
+
+
+                    //if fhir host is https, then enable ssl
+                    if (fhir_host.Contains("https") == true)
+                    {
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+                    }
+
+                    try
+                    {
+                        responseString = await client.GetStringAsync(fhir_host + "/" + type + _searchParams);
+                    }
+                    catch (Exception ex)
+                    {
+                        _respCode = HttpStatusCode.InternalServerError;
+                        //wrap and send the exception to client
+                        ContentType = "text/plain";
+                        responseString = "Error while calling FHIR endpoint -> Original error " + ex.Message + "|Detailed Stack" + ex.StackTrace;
+                    }
                 }
-
-                //fetch the accept header type from request - in which format client expects response
-                if (headers.Contains("Content_Type"))//default is xml
+                else
                 {
-                    ContentType = headers.GetValues("Content_Type").First();
-                }
-
-
-                HttpClient client = new HttpClient();
-
-                client.DefaultRequestHeaders
-                .Accept
-                .Add(new MediaTypeWithQualityHeaderValue(ContentType));//ACCEPT header
-
-
-                //if fhir host is https, then enable ssl
-                if (fhir_host.Contains("https") == true)
-                {
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                }
-
-                try
-                {
-                    responseString = await client.GetStringAsync(fhir_host + "/" + type  + _searchParams);
-                }
-                catch (Exception ex)
-                {
-                    //wrap and send the exception to client
+                    _respCode = HttpStatusCode.NotAcceptable;
+                    //the host is blank - fail the request
                     ContentType = "text/plain";
-                    responseString = "Error while calling FHIR endpoint -> Original error " + ex.Message + "|Detailed Stack" + ex.StackTrace;
+                    responseString = "No FHIR host url specified. Please supply a FHIR host";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                //the host is blank - fail the request
+                _respCode = HttpStatusCode.InternalServerError;
+                //wrap and send the exception to client
                 ContentType = "text/plain";
-                responseString = "No FHIR host url specified. Please supply a FHIR host";
+                responseString = "System error -> " + ex.Message + "|Detailed Stack" + ex.StackTrace;
             }
             return new HttpResponseMessage()
             {
                 Content = new StringContent(responseString, Encoding.UTF8, ContentType)
+                , StatusCode = _respCode
             };
         }
 
-        //[HttpPost, HttpGet, Route("{type}/_search")]
-        //public FhirResponse SearchWithOperator(string type)
-        //{
-        //    // todo: get tupled parameters from post.
-        //    return Search(type);
-        //}
+        [HttpPost, HttpGet, Route("{type}/_search")]
+        public FhirResponse SearchWithOperator(string type)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpGet, Route("{type}/_history")]
-        //public FhirResponse History(string type)
-        //{
-        //    var parameters = new HistoryParameters(Request);
-        //    return _fhirService.History(type, parameters);
-        //}
+        [HttpGet, Route("{type}/_history")]
+        public FhirResponse History(string type)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
         //// ============= Whole System Interactions
 
-        //[HttpGet, Route("metadata")]
-        //public FhirResponse Metadata()
-        //{
-        //    return _fhirService.Conformance(Settings.Version);
-        //}
+        [HttpGet, Route("metadata")]
+        public FhirResponse Metadata()
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpOptions, Route("")]
-        //public FhirResponse Options()
-        //{
-        //    return _fhirService.Conformance(Settings.Version);
-        //}
+        [HttpOptions, Route("")]
+        public FhirResponse Options()
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpPost, Route("")]
-        //public FhirResponse Transaction(Bundle bundle)
-        //{
-        //    return _fhirService.Transaction(bundle);
-        //}
+        [HttpPost, Route("")]
+        public FhirResponse Transaction(Bundle bundle)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        ////[HttpPost, Route("Mailbox")]
-        ////public FhirResponse Mailbox(Bundle document)
-        ////{
-        ////    Binary b = Request.GetBody();
-        ////    return service.Mailbox(document, b);
-        ////}
+        [HttpPost, Route("Mailbox")]
+        public FhirResponse Mailbox(Bundle document)
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpGet, Route("_history")]
-        //public FhirResponse History()
-        //{
-        //    var parameters = new HistoryParameters(Request);
-        //    return _fhirService.History(parameters);
-        //}
+        [HttpGet, Route("_history")]
+        public FhirResponse History()
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
-        //[HttpGet, Route("_snapshot")]
-        //public FhirResponse Snapshot()
-        //{
-        //    string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
-        //    int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
-        //    return _fhirService.GetPage(snapshot, start);
-        //}
+        [HttpGet, Route("_snapshot")]
+        public FhirResponse Snapshot()
+        {
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
+        }
 
         //// Operations
 
-        //[HttpPost, Route("${operation}")]
-        //public FhirResponse ServerOperation(string operation)
-        //{
-        //    switch (operation.ToLower())
-        //    {
-        //        case "error": throw new Exception("This error is for testing purposes");
-        //        default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
-        //    }
-        //}
-
-        //[HttpPost, Route("{type}/{id}/${operation}")]
-        //public FhirResponse InstanceOperation(string type, string id, string operation, Parameters parameters)
-        //{
-        //    Key key = Key.Create(type, id);
-        //    switch (operation.ToLower())
-        //    {
-        //        case "meta": return _fhirService.ReadMeta(key);
-        //        case "meta-add": return _fhirService.AddMeta(key, parameters);
-        //        case "meta-delete":
-
-        //        default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
-        //    }
-        //}
-
-        //[HttpPost, HttpGet, Route("{type}/{id}/$everything")]
-        //public FhirResponse Everything(string type, string id = null)
-        //{
-        //    Key key = Key.Create(type, id);
-        //    return _fhirService.Everything(key);
-        //}
-
-        //[HttpPost, HttpGet, Route("{type}/$everything")]
-        //public FhirResponse Everything(string type)
-        //{
-        //    Key key = Key.Create(type);
-        //    return _fhirService.Everything(key);
-        //}
-
-        //[HttpPost, HttpGet, Route("Composition/{id}/$document")]
-        //public FhirResponse Document(string id)
-        //{
-        //    Key key = Key.Create("Composition", id);
-        //    return _fhirService.Document(key);
-        //}
-
-        // ============= Tag Interactions
-
-        /*
-        [HttpGet, Route("_tags")]
-        public TagList AllTags()
+        [HttpPost, Route("${operation}")]
+        public FhirResponse ServerOperation(string operation)
         {
-            return service.TagsFromServer();
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
         }
 
-        [HttpGet, Route("{type}/_tags")]
-        public TagList ResourceTags(string type)
+        [HttpPost, Route("{type}/{id}/${operation}")]
+        public FhirResponse InstanceOperation(string type, string id, string operation, Parameters parameters)
         {
-            return service.TagsFromResource(type);
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
         }
 
-        [HttpGet, Route("{type}/{id}/_tags")]
-        public TagList InstanceTags(string type, string id)
+        [HttpPost, HttpGet, Route("{type}/{id}/$everything")]
+        public FhirResponse Everything(string type, string id = null)
         {
-            return service.TagsFromInstance(type, id);
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
         }
 
-        [HttpGet, Route("{type}/{id}/_history/{vid}/_tags")]
-        public HttpResponseMessage HistoryTags(string type, string id, string vid)
+        [HttpPost, HttpGet, Route("{type}/$everything")]
+        public FhirResponse Everything(string type)
         {
-            TagList tags = service.TagsFromHistory(type, id, vid);
-            return Request.CreateResponse(HttpStatusCode.OK, tags);
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
         }
 
-        [HttpPost, Route("{type}/{id}/_tags")]
-        public HttpResponseMessage AffixTag(string type, string id, TagList taglist)
+        [HttpPost, HttpGet, Route("Composition/{id}/$document")]
+        public FhirResponse Document(string id)
         {
-            service.AffixTags(type, id, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.OK);
+            return new FhirResponse(HttpStatusCode.NotImplemented) { };
         }
-
-        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags")]
-        public HttpResponseMessage AffixTag(string type, string id, string vid, TagList taglist)
-        {
-            service.AffixTags(type, id, vid, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
-
-        [HttpPost, Route("{type}/{id}/_tags/_delete")]
-        public HttpResponseMessage DeleteTags(string type, string id, TagList taglist)
-        {
-            service.RemoveTags(type, id, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-
-        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags/_delete")]
-        public HttpResponseMessage DeleteTags(string type, string id, string vid, TagList taglist)
-        {
-            service.RemoveTags(type, id, vid, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-        */
 
     }
 
